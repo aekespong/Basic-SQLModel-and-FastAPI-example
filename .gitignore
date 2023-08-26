@@ -1,4 +1,6 @@
-.gitignore
+*git*
 tox.ini
 __pycache__
 *.db
+*async*
+*.json

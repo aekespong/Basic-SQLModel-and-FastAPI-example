@@ -2,12 +2,22 @@ from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Session, SQLModel, create_engine, select
+from async_cache import cache_response, timed_cache_response
 
-from database import Hero, HeroCreate, HeroRead, HeroUpdate, Team, TeamCreate, TeamRead, TeamUpdate, create_heroes
+from models import (
+    Hero,
+    HeroCreate,
+    HeroRead,
+    HeroUpdate,
+    Team,
+    TeamCreate,
+    TeamRead,
+    TeamUpdate,
+    populate_heroes,
+)
 
 sqlite_file_name = "heroes.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
-
 connect_args = {"check_same_thread": False}
 engine = create_engine(sqlite_url, echo=False, connect_args=connect_args)
 
@@ -15,31 +25,27 @@ engine = create_engine(sqlite_url, echo=False, connect_args=connect_args)
 def create_db_and_tables():
     SQLModel.metadata.drop_all(engine)
     SQLModel.metadata.create_all(engine)
-
-
+    
+    
 def get_session():
     with Session(engine) as session:
         yield session
 
 
-app = FastAPI()
+app = FastAPI(
+    title="Heroes and Teams example",
+    version="0.9",
+    docs_url="/",
+    description="Basic SQLModel and FastAPI to retrieve data hierarchical structure",
+)
 
 
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
-    create_heroes(engine)
+    populate_heroes(engine)
 
-
-@app.post("/hero/", response_model=HeroRead)
-def create_hero(*, session: Session = Depends(get_session), hero: HeroCreate):
-    db_hero = Hero.from_orm(hero)
-    session.add(db_hero)
-    session.commit()
-    session.refresh(db_hero)
-    return db_hero
-
-
+@timed_cache_response
 @app.get("/heroes/", response_model=List[HeroRead])
 def read_heroes(
     *,
@@ -57,6 +63,15 @@ def read_hero(*, session: Session = Depends(get_session), hero_id: int):
     if not hero:
         raise HTTPException(status_code=404, detail="Hero not found")
     return hero
+
+
+@app.post("/hero/", response_model=HeroRead)
+def create_hero(*, session: Session = Depends(get_session), hero: HeroCreate):
+    db_hero = Hero.from_orm(hero)
+    session.add(db_hero)
+    session.commit()
+    session.refresh(db_hero)
+    return db_hero
 
 
 @app.patch("/hero/{hero_id}", response_model=HeroRead)
@@ -84,16 +99,7 @@ def delete_hero(*, session: Session = Depends(get_session), hero_id: int):
     session.commit()
     return {"ok": True}
 
-
-@app.post("/team/", response_model=TeamRead)
-def create_team(*, session: Session = Depends(get_session), team: TeamCreate):
-    db_team = Team.from_orm(team)
-    session.add(db_team)
-    session.commit()
-    session.refresh(db_team)
-    return db_team
-
-
+@timed_cache_response
 @app.get("/teams/", response_model=List[TeamRead])
 def read_teams(
     *,
@@ -110,8 +116,17 @@ def read_team(*, team_id: int, session: Session = Depends(get_session)):
     team = session.get(Team, team_id)
     if not team:
         raise HTTPException(status_code=404, detail="Team not found")
-    
+
     return team
+
+
+@app.post("/team/", response_model=TeamRead)
+def create_team(*, session: Session = Depends(get_session), team: TeamCreate):
+    db_team = Team.from_orm(team)
+    session.add(db_team)
+    session.commit()
+    session.refresh(db_team)
+    return db_team
 
 
 @app.patch("/team/{team_id}", response_model=TeamRead)

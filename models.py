@@ -1,6 +1,9 @@
-
-from typing import List, Optional
+from typing import Optional
 from sqlmodel import Field, Relationship, Session, SQLModel
+
+'''
+    Team that has a number of Heroes
+'''
 
 
 class TeamBase(SQLModel):
@@ -11,7 +14,7 @@ class TeamBase(SQLModel):
 class Team(TeamBase, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
 
-    heroes: List["Hero"] = Relationship(back_populates="team")
+    heroes: list["Hero"] = Relationship(back_populates="team")
 
 
 class TeamCreate(TeamBase):
@@ -21,6 +24,11 @@ class TeamCreate(TeamBase):
 class TeamUpdate(SQLModel):
     name: Optional[str] = None
     headquarters: Optional[str] = None
+
+
+'''
+    Heroes that belong to one Team
+'''
 
 
 class HeroBase(SQLModel):
@@ -37,11 +45,6 @@ class Hero(HeroBase, table=True):
     team: Optional[Team] = Relationship(back_populates="heroes")
 
 
-class HeroRead(HeroBase):
-    id: int
-    team: Optional["Team"]
-
-
 class HeroCreate(HeroBase):
     pass
 
@@ -53,15 +56,30 @@ class HeroUpdate(SQLModel):
     team_id: Optional[int] = None
 
 
+'''
+    Read classes with relationships
+    implemented in Optional field and list
+'''
+
+
+class HeroRead(HeroBase):
+    id: int
+    team: Optional["Team"]
+
+
 class TeamRead(TeamBase):
     id: int
-    heroes: List["Hero"]
+    heroes: list["Hero"]
 
 
 # TeamRead.update_forward_refs()  # Nödvänding för att team.heroes ska ha en referens till objektet Hero och inte till Any
-    
 
-def create_heroes(engine):
+'''
+    Populate database with records
+'''
+
+
+def populate_heroes(engine):
     with Session(engine) as session:
         team_preventers = Team(name="Preventers", headquarters="Sharp Tower")
         team_z_force = Team(name="Z-Force", headquarters="Sister Margaret’s Bar")
@@ -72,10 +90,7 @@ def create_heroes(engine):
             team=team_z_force,
         )
         hero_rusty_man = Hero(
-            name="Rusty-Man",
-            secret_name="Tommy Sharp",
-            age=48,
-            team=team_preventers
+            name="Rusty-Man", secret_name="Tommy Sharp", age=48, team=team_preventers
         )
         hero_spider_boy = Hero(
             name="Spider-Boy", secret_name="Pedro Parqueador", team=team_preventers
@@ -84,14 +99,3 @@ def create_heroes(engine):
         session.add(hero_rusty_man)
         session.add(hero_spider_boy)
         session.commit()
-
-        session.refresh(hero_deadpond)
-        session.refresh(hero_rusty_man)
-        session.refresh(hero_spider_boy)
-
-        print("Deadpond:", hero_deadpond)
-        print("Deadpond team:", hero_deadpond.team)
-        print("Rusty-Man:", hero_rusty_man)
-        print("Rusty-Man team:", hero_rusty_man.team)
-        print("Spider-Boy:", hero_spider_boy)
-        print("Spider-Boy team:", hero_spider_boy.team)
