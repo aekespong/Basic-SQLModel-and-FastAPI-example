@@ -1,9 +1,9 @@
-from typing import List, Optional
+from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, Query
-from sqlmodel import Field, Relationship, Session, SQLModel, create_engine, select
+from sqlmodel import Session, SQLModel, create_engine, select
 
-from database import HeroBase, Hero, HeroCreate, HeroRead, HeroUpdate, Team, TeamBase, TeamCreate, TeamRead, TeamUpdate, create_heroes
+from database import Hero, HeroCreate, HeroRead, HeroUpdate, Team, TeamCreate, TeamRead, TeamUpdate, create_heroes
 
 sqlite_file_name = "heroes.db"
 sqlite_url = f"sqlite:///{sqlite_file_name}"
@@ -28,10 +28,10 @@ app = FastAPI()
 @app.on_event("startup")
 def on_startup():
     create_db_and_tables()
-    create_heroes(engine)    
+    create_heroes(engine)
 
 
-@app.post("/heroes/", response_model=HeroRead)
+@app.post("/hero/", response_model=HeroRead)
 def create_hero(*, session: Session = Depends(get_session), hero: HeroCreate):
     db_hero = Hero.from_orm(hero)
     session.add(db_hero)
@@ -51,7 +51,7 @@ def read_heroes(
     return heroes
 
 
-@app.get("/heroes/{hero_id}", response_model=HeroRead)
+@app.get("/hero/{hero_id}", response_model=HeroRead)
 def read_hero(*, session: Session = Depends(get_session), hero_id: int):
     hero = session.get(Hero, hero_id)
     if not hero:
@@ -59,7 +59,7 @@ def read_hero(*, session: Session = Depends(get_session), hero_id: int):
     return hero
 
 
-@app.patch("/heroes/{hero_id}", response_model=HeroRead)
+@app.patch("/hero/{hero_id}", response_model=HeroRead)
 def update_hero(
     *, session: Session = Depends(get_session), hero_id: int, hero: HeroUpdate
 ):
@@ -75,7 +75,7 @@ def update_hero(
     return db_hero
 
 
-@app.delete("/heroes/{hero_id}")
+@app.delete("/hero/{hero_id}")
 def delete_hero(*, session: Session = Depends(get_session), hero_id: int):
     hero = session.get(Hero, hero_id)
     if not hero:
@@ -85,7 +85,7 @@ def delete_hero(*, session: Session = Depends(get_session), hero_id: int):
     return {"ok": True}
 
 
-@app.post("/teams/", response_model=TeamRead)
+@app.post("/team/", response_model=TeamRead)
 def create_team(*, session: Session = Depends(get_session), team: TeamCreate):
     db_team = Team.from_orm(team)
     session.add(db_team)
@@ -105,7 +105,7 @@ def read_teams(
     return teams
 
 
-@app.get("/teams/{team_id}", response_model=TeamRead)
+@app.get("/team/{team_id}", response_model=TeamRead)
 def read_team(*, team_id: int, session: Session = Depends(get_session)):
     team = session.get(Team, team_id)
     if not team:
@@ -114,7 +114,7 @@ def read_team(*, team_id: int, session: Session = Depends(get_session)):
     return team
 
 
-@app.patch("/teams/{team_id}", response_model=TeamRead)
+@app.patch("/team/{team_id}", response_model=TeamRead)
 def update_team(
     *,
     session: Session = Depends(get_session),
@@ -133,7 +133,7 @@ def update_team(
     return db_team
 
 
-@app.delete("/teams/{team_id}")
+@app.delete("/team/{team_id}")
 def delete_team(*, session: Session = Depends(get_session), team_id: int):
     team = session.get(Team, team_id)
     if not team:

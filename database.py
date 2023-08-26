@@ -1,7 +1,5 @@
 
 from typing import List, Optional
-
-from fastapi import Depends
 from sqlmodel import Field, Relationship, Session, SQLModel
 
 
@@ -60,7 +58,7 @@ class TeamRead(TeamBase):
     heroes: List["Hero"]
 
 
-# TeamRead.update_forward_refs()  # Nödvänding för att team.heroes ska ha en referen till objektet Hero och inte till Any
+# TeamRead.update_forward_refs()  # Nödvänding för att team.heroes ska ha en referens till objektet Hero och inte till Any
     
 
 def create_heroes(engine):
