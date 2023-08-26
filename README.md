@@ -2,7 +2,7 @@
 
 Illustrating the fundamentals using Models with Relationships, as demonstrated in the guide: https://sqlmodel.tiangolo.com/tutorial/fastapi/relationships/
 
-This to demonstrates retrieving the entire hierarchical structure and all levels. 
+This to demonstrates retrieving the entire hierarchical structure and data from all levels. 
 
 Relationships() is defined to achieve this:
 ```
