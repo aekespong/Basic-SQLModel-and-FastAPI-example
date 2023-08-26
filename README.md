@@ -21,11 +21,21 @@ def read_team(*, team_id: int, session: Session = Depends(get_session)):
   return team
 ```
 The code for retrieving the whole structure of Teams and Heroes is achieved with only one line of code: team = session.get(Team, team_id) It is all thanks to the Relationships defined as:
+```
+class Team(TeamBase, table=True):
+  id: Optional[int] = Field(default=None, primary_key=True)
+  heroes: List["Hero"] = Relationship(back_populates="team")
 
-class Team(TeamBase, table=True): id: Optional[int] = Field(default=None, primary_key=True) heroes: List["Hero"] = Relationship(back_populates="team")
-
-class Hero(HeroBase, table=True): id: Optional[int] = Field(default=None, primary_key=True) team: Optional[Team] = Relationship(back_populates="heroes")
-
+class Hero(HeroBase, table=True):
+  id: Optional[int] = Field(default=None, primary_key=True)
+  team: Optional[Team] = Relationship(back_populates="heroes")
+```
 This solution shows the simplicity and strengths of SQLModel, pydantic and SQLAlchemy together.
 
-New File at / · aekespong/SQLModel-example
+## To start: 
+`uvicorn.exe hero:app`
+
+## To view swagger docs:
+http://localhost:8000/docs
+
+`[uvicorn.exe hero:app](http://localhost:5000/docs)http://localhost:5000/docs`
