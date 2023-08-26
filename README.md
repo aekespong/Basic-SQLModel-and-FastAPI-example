@@ -20,7 +20,11 @@ def read_team(*, team_id: int, session: Session = Depends(get_session)):
     raise HTTPException(status_code=404, detail="Team not found")
   return team
 ```
-The code for retrieving the whole structure of Teams and Heroes is achieved with only one line of code: team = session.get(Team, team_id) It is all thanks to the Relationships defined as:
+The code for retrieving the whole structure of Teams and Heroes is achieved with only one line of code: 
+
+`team = session.get(Team, team_id)`
+
+It is all thanks to the Relationships defined as:
 ```
 class Team(TeamBase, table=True):
   id: Optional[int] = Field(default=None, primary_key=True)
@@ -38,4 +42,3 @@ This solution shows the simplicity and strengths of SQLModel, pydantic and SQLAl
 ## To view swagger docs:
 http://localhost:8000/docs
 
-`[uvicorn.exe hero:app](http://localhost:5000/docs)http://localhost:5000/docs`
