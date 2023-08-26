@@ -1,3 +1,4 @@
+.gitignore
 tox.ini
 __pycache__
 *.db
