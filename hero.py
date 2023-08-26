@@ -2,7 +2,6 @@ from typing import List
 
 from fastapi import Depends, FastAPI, HTTPException, Query
 from sqlmodel import Session, SQLModel, create_engine, select
-from async_cache import cache_response, timed_cache_response
 
 from models import (
     Hero,
@@ -45,7 +44,6 @@ def on_startup():
     create_db_and_tables()
     populate_heroes(engine)
 
-@timed_cache_response
 @app.get("/heroes/", response_model=List[HeroRead])
 def read_heroes(
     *,
@@ -99,7 +97,6 @@ def delete_hero(*, session: Session = Depends(get_session), hero_id: int):
     session.commit()
     return {"ok": True}
 
-@timed_cache_response
 @app.get("/teams/", response_model=List[TeamRead])
 def read_teams(
     *,
