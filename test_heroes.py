@@ -4,7 +4,7 @@ import time
 
 from requests import Response
 
-BASE_URL = "http://localhost:5000"
+BASE_URL = "http://127.0.0.1:8000"
 
 
 def get_response(url: str) -> Response:
